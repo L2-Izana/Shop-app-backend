@@ -1,0 +1,3 @@
+# Use for adjusting port
+server:
+  port: 8088
