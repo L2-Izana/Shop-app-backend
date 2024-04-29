@@ -11,7 +11,7 @@ public class FileValidationService {
             return ResponseEntity.badRequest().body(FileValidateStatus.NULL);
         } else if (file.getSize() == 0){
             return ResponseEntity.badRequest().body(FileValidateStatus.EMPTY);
-        } else if (file.getSize() > 10*1024){
+        } else if (file.getSize() > 5*1024*1024){
             return ResponseEntity.badRequest().body(FileValidateStatus.OVERSIZED);
         }
         else {
@@ -29,7 +29,7 @@ public class FileValidationService {
 class FileValidateStatus {
     protected final static String NULL = "Cannot resolve a null file";
     protected final static String EMPTY = "Cannot resolve an empty file";
-    protected final static String OVERSIZED = "Cannot resolve a file > 1MB";
+    protected final static String OVERSIZED = "Cannot resolve a file > 5MB";
     protected final static String INVALID_CONTENT_TYPE = "Cannot resolve a file with invalid content type";
     protected final static String VALID = "VALID";
 }

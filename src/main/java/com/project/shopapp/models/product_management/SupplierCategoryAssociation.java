@@ -4,22 +4,23 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "supplier_logos")
-@Getter
+@Table(name = "supplier_category_associations")
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
+@Getter
+@ToString
 @Builder
-public class SupplierLogo {
+@NoArgsConstructor
+@AllArgsConstructor
+public class SupplierCategoryAssociation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "supplier_id", nullable = false)
     private Supplier supplier;
 
-    @Lob
-    @Column(name = "image_data")
-    private byte[] imageData;
+    @ManyToOne
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
 }

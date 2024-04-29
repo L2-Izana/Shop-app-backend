@@ -1,25 +1,31 @@
 package com.project.shopapp.models.product_management;
 
-import com.project.shopapp.models.product_management.Product;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "product_images")
-@Getter
+@Table(name = "supplier_product_associations")
 @Setter
-@AllArgsConstructor
+@Getter
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
-public class ProductImage {
+public class SupplierProductAssociation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "price")
+    private float price;
+
+    @Column(name = "quantity")
+    private int quantity;
+
+    @ManyToOne
+    @JoinColumn(name = "supplier_id")
+    private Supplier supplier;
+
     @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;
-
-    @Column(name = "image_url", length = 300)
-    private String imageUrl;
 }

@@ -1,6 +1,7 @@
 package com.project.shopapp.models.product_management;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Entity
@@ -16,7 +17,7 @@ public class Supplier {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name", length = 100)
+    @Column(name = "name", nullable = false, unique = true, length = 100)
     private String name;
 
     @Column(name = "phone_number", length = 20)
@@ -26,5 +27,5 @@ public class Supplier {
     private String address;
 
     @Column(name = "is_active", nullable = false)
-    private int isActive;
+    private boolean isActive;
 }

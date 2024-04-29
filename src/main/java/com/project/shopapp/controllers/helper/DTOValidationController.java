@@ -1,4 +1,4 @@
-package com.project.shopapp.controllers;
+package com.project.shopapp.controllers.helper;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -6,8 +6,8 @@ import org.springframework.validation.FieldError;
 
 import java.util.List;
 
-public class FormValidationController {
-    public static ResponseEntity<?> handleFormValidationErrors(BindingResult result){
+public class DTOValidationController {
+    public static ResponseEntity<?> handleDTOValidationErrors(BindingResult result){
         if (result.hasErrors()) {
             List<String> errorMessages = result.getFieldErrors()
                     .stream()

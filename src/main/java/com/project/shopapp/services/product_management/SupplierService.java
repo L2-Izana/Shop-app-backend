@@ -1,6 +1,9 @@
 package com.project.shopapp.services.product_management;
 
 import com.project.shopapp.dtos.product_management.SupplierDTO;
+import com.project.shopapp.exceptions.DataNotFoundException;
+import com.project.shopapp.exceptions.DuplicateAttributeException;
+import com.project.shopapp.exceptions.FileReadException;
 import com.project.shopapp.models.product_management.Supplier;
 import com.project.shopapp.models.product_management.SupplierLogo;
 import com.project.shopapp.repositories.product_management.SupplierLogoRepository;
@@ -9,9 +12,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
-import static com.project.shopapp.services.helper.file_management.FileStorageService.storeFile;
+import static com.project.shopapp.services.helper.file_management.ImageManipulator.resizeImage;
 
 @Service
 @RequiredArgsConstructor
@@ -20,23 +25,23 @@ public class SupplierService implements ISupplierService {
     private final SupplierLogoRepository supplierLogoRepository;
 
     @Override
-    public Supplier createSupplier(SupplierDTO supplierDTO) {
+    public Supplier createSupplier(SupplierDTO supplierDTO) throws DuplicateAttributeException {
         if (supplierRepository.existsByName(supplierDTO.getName())) {
-            return null;
+            throw new DuplicateAttributeException("This supplier name already exists");
         }
         Supplier newSupplier = Supplier.builder()
                 .name(supplierDTO.getName())
                 .phoneNumber(supplierDTO.getPhoneNumber())
                 .address(supplierDTO.getAddress())
-                .isActive(1)
+                .isActive(true)
                 .build();
         return supplierRepository.save(newSupplier);
     }
 
     @Override
-    public Supplier getSupplierById(long id) {
+    public Supplier getSupplierById(long id) throws DataNotFoundException {
         return supplierRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Supplier not found"));
+                .orElseThrow(() -> new DataNotFoundException("Supplier not found"));
     }
 
     @Override
@@ -46,20 +51,31 @@ public class SupplierService implements ISupplierService {
 
     @Override
     public Supplier updateSupplier(long supplierId,
-                                   SupplierDTO supplierDTO) {
+                                   SupplierDTO supplierDTO) throws DataNotFoundException, DuplicateAttributeException {
         Supplier existingSupplier = getSupplierById(supplierId);
-        existingSupplier.setName((supplierDTO.getName() != null) ? supplierDTO.getName() : existingSupplier.getName());
-        existingSupplier.setPhoneNumber((supplierDTO.getPhoneNumber() != null) ? supplierDTO.getPhoneNumber() : existingSupplier.getPhoneNumber());
-        existingSupplier.setAddress((supplierDTO.getAddress() != null) ? supplierDTO.getAddress() : existingSupplier.getAddress());
-        existingSupplier.setIsActive(supplierDTO.getIsActive() == 1 ? 1 : existingSupplier.getIsActive());
+        if (Objects.equals(existingSupplier.getName(), supplierDTO.getName())) {
+            // Update information
+            existingSupplier.setPhoneNumber(supplierDTO.getPhoneNumber());
+            existingSupplier.setAddress(supplierDTO.getAddress());
+            existingSupplier.setActive(supplierDTO.isActive());
+            supplierRepository.save(existingSupplier);
+            return existingSupplier;
+        }
+        if (supplierRepository.existsByName(supplierDTO.getName())) {
+            throw new DuplicateAttributeException("Supplier name already exists");
+        }
+        existingSupplier.setName(supplierDTO.getName());
+        existingSupplier.setPhoneNumber(supplierDTO.getPhoneNumber());
+        existingSupplier.setAddress(supplierDTO.getAddress());
+        existingSupplier.setActive(supplierDTO.isActive());
         supplierRepository.save(existingSupplier);
         return existingSupplier;
     }
 
     @Override
-    public void softDeleteSupplier(long id) {
+    public void deleteSupplier(long id) throws DataNotFoundException {
         Supplier existingSupplier = getSupplierById(id);
-        existingSupplier.setIsActive(0);
+        existingSupplier.setActive(false);
         supplierRepository.save(existingSupplier);
     }
 
@@ -69,21 +85,21 @@ public class SupplierService implements ISupplierService {
     }
 
     @Override
-    public SupplierLogo createSupplierLogo(Long supplierId, MultipartFile file) throws Exception {
-        Supplier existingSupplier = getSupplierById(supplierId);
-
-        storeFile(file);
-        SupplierLogo supplierLogo = new SupplierLogo();
-        supplierLogo.setSupplier(existingSupplier);
-        supplierLogo.setData(file.getBytes());
-        return supplierLogoRepository.save(supplierLogo);
-    }
-
-    @Override
-    public SupplierLogo updateSupplierLogo(Long supplierId, MultipartFile file) throws Exception {
+    public SupplierLogo uploadSupplierLogo(Long supplierId, MultipartFile file) throws DataNotFoundException, FileReadException {
         Supplier existingSupplier = getSupplierById(supplierId);
         SupplierLogo existingSupplierLogo = supplierLogoRepository.getSupplierLogoBySupplier(existingSupplier);
-        existingSupplierLogo.setData(file.getBytes());
-        return supplierLogoRepository.save(existingSupplierLogo);
+        try {
+            if (existingSupplierLogo == null) {
+                SupplierLogo newSupplierLogo = new SupplierLogo();
+                newSupplierLogo.setSupplier(existingSupplier);
+                newSupplierLogo.setImageData(resizeImage(file.getBytes(), "thumbnail"));
+                return supplierLogoRepository.save(newSupplierLogo);
+            } else {
+                existingSupplierLogo.setImageData(resizeImage(file.getBytes(), "thumbnail"));
+                return supplierLogoRepository.save(existingSupplierLogo);
+            }
+        } catch (IOException e) {
+            throw new FileReadException("Failed to read file");
+        }
     }
 }

@@ -1,25 +1,24 @@
-package com.project.shopapp.models.product_management;
+package com.project.shopapp.models.user_management;
 
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "supplier_logos")
-@Getter
+@Table(name = "user_avatars")
 @Setter
-@AllArgsConstructor
+@Getter
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
-public class SupplierLogo {
+public class UserAvatar {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "supplier_id", nullable = false)
-    private Supplier supplier;
+    @JoinColumn(name = "user_profile_id")
+    private UserProfile userProfile;
 
-    @Lob
     @Column(name = "image_data")
     private byte[] imageData;
 }

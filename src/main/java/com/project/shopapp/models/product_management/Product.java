@@ -21,21 +21,17 @@ public class Product {
     @Column(name = "name", nullable = false, length = 100)
     private String name;
 
-
-    @Column(name = "thumbnail", length = 300)
-    private String thumbnail;
-
     @Column(name = "description")
     private String description;
 
     @ManyToOne
-    @JoinColumn(name = "category_id")
+    @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
     @PrePersist
