@@ -2,20 +2,22 @@ package com.project.shopapp.dtos.auth;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.*;
 
 @Data
+@Setter
+@Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserLoginDTO {
     @JsonProperty("phone_number")
-    @NotBlank(message = "Phone number is required")
+    @NotNull(message = "Phone number is required")
     private String phoneNumber;
 
     @NotBlank(message = "Password cannot be blank")
+    @Size(min = 8, max = 50, message = "Password length must be between 8 and 50 characters")
     private String password;
 }
